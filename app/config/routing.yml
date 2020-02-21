@@ -1,0 +1,8 @@
+weathert_rest_api:
+    resource: "@WeatherRestApiBundle/Controller/"
+    type:     annotation
+    prefix:   /api
+
+app:
+    resource: '@WeatherBundle/Controller/'
+    type: annotation

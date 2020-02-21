@@ -1,0 +1,142 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <select class="form-control towns" id="towns">
+        {% for town in allTowns %}
+            <option value="{{ town.id }}">{{ town.name }}</option>
+        {% endfor %}
+    </select>
+    {% if user %}
+    <button id="add-favorite-town" type="button" class="btn btn-primary add-to-favorite">Add to Favorite</button>
+    {% endif %}
+    <div id="weather-widget" class="container weather-widget hide">
+        <div class="row">
+            <div class="col-md-12">
+                <div id="current-town" class="current-town"></div>
+                <div id="current-day-of-week"></div>
+                <div id="weather-conditions-weather-conditions"></div>
+            </div>
+        </div>
+        <div class="row margin-top-20">
+            <div class="col-md-6">
+                <div>
+                    <div class="left-container"><img id="current-weather-icon" class="current-weather-icon" src="" alt="" /></div>
+                    <div class="left-container"><span id="current-temperature" class="current-temperature"></span></div>
+                    <div class="left-container"><span><a class="temperature-unit-btn active" href="#" data-type="c">°C</a> | <a class="temperature-unit-btn" href="#" data-type="f">°F</a></span></div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div>Precipitation: <span id="current-precipitation"></span>mm</div>
+                <div>Humidity: <span id="current-humidity"></span>%</div>
+                <div>Wind: <span id="current-wind"></span> km/h</div>
+            </div>
+        </div>
+
+        <div class="row weather-forecast-container">
+            <div id="weather-forecast-content" class="col-md-12"></div>
+        </div>
+    </div>
+
+    <script>
+        var temperatureUnit = 'c';
+        var temperatureData = {};
+
+        function showTemperature(data, unit) {
+            let current_temp;
+            if (unit == 'c') {
+                current_temp = data.current_temp_c;
+            } else {
+                current_temp = data.current_temp_f;
+            }
+
+            $('#current-town').html(data.current_town);
+            $('#current-day-of-week').html(data.current_day_of_week);
+            $('#current-weather-conditions').html(data.current_weather_conditions);
+            $('#current-weather-icon').attr('src', data.current_weather_icon);
+            $('#current-temperature').html(current_temp);
+            $('#current-precipitation').html(data.current_precipitation);
+            $('#current-humidity').html(data.current_humidity);
+            $('#current-wind').html(data.current_wind);
+
+            $('#weather-forecast-content').html('');
+            $.each(data.forecast, function(index, forecastItem) {
+
+                let min_temp;
+                let max_temp;
+
+                if (unit == 'c') {
+                    min_temp = forecastItem.min_temp_c;
+                    max_temp = forecastItem.max_temp_c;
+                } else {
+                    min_temp = forecastItem.min_temp_f;
+                    max_temp = forecastItem.max_temp_f;
+                }
+
+                let forecastItemHtml = '' +
+                    '<div class="weather-forecast-day">' +
+                    '<div>' + forecastItem.day_of_week + '</div>' +
+                    '<div><img src="' + forecastItem.weather_icon + '" alt="" /></div>' +
+                    '<div>' + max_temp + '° ' + min_temp + '°</div>' +
+                    '</div>';
+
+                $('#weather-forecast-content').append(forecastItemHtml);
+            });
+        }
+
+        function getTownWeatherData(townId) {
+            $('#add-favorite-town').attr('disabled', 'disabled');
+            $.ajax({
+                type: 'POST',
+                url: '/api/forecast',
+                data: { town_id: townId },
+                dataType: 'json',
+                success: function (response) {
+                    temperatureData = response;
+                    showTemperature(temperatureData, temperatureUnit);
+
+                    if (response.has_user_town == true) {
+                        $('#add-favorite-town').attr('disabled', 'disabled');
+                        $('#add-favorite-town').html('Added');
+                    } else {
+                        $('#add-favorite-town').html('Add to Favorite');
+                        $('#add-favorite-town').removeAttr('disabled');
+                    }
+
+                    $('#weather-widget').removeClass('hide');
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            getTownWeatherData(1);
+            $('#towns').change(function() {
+                let townId = $('#towns').val();
+                getTownWeatherData(townId);
+            });
+
+            $('#add-favorite-town').click(function () {
+                let townId = $('#towns').val();
+                $('#add-favorite-town').attr('disabled', 'disabled');
+                $.ajax({
+                    type: 'POST',
+                    url: '/addFavoriteTown',
+                    data: { town_id: townId },
+                    dataType: 'json',
+                    success: function (response) {
+                        $('#add-favorite-town').html('Added');
+                    }
+                });
+            });
+
+            $('.temperature-unit-btn').click(function (e) {
+                e.preventDefault();
+                $('.temperature-unit-btn').removeClass('active');
+                $(this).addClass('active');
+
+                temperatureUnit = $(this).attr('data-type');
+                showTemperature(temperatureData, temperatureUnit)
+            });
+        });
+    </script>
+{% endblock %}

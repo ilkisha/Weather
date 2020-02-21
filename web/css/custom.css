@@ -1,0 +1,46 @@
+
+.weather-widget {
+    margin-top: 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    color: #878787;
+}
+.current-town {
+    font-size: 32px;
+}
+.current-weather-icon {
+    margin-right: 10px;
+}
+.current-temperature {
+    font-size: 64px;
+    line-height: 60px;
+}
+.weather-forecast-container {
+    margin-top: 60px;
+}
+.weather-forecast-day {
+    width: 14.2857142857%;
+    float: left;
+    text-align: center;
+}
+
+.margin-top-20 {
+    margin-top: 20px;
+}
+.towns {
+    float: left;
+    margin-right: 15px;
+}
+.left-container {
+    float: left;
+}
+.right-container {
+    float: right;
+}
+.my-favorite-towns {
+    float: left;
+    margin-right: 15px;
+}
+.temperature-unit-btn.active {
+    color: #000;
+}
